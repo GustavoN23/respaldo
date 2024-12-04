@@ -9,14 +9,14 @@ class CrearVacuna extends Component
 {
     public $nombre;
     public $tipo_user;
-    public $numeroDosis;
+    public $numeroDosis = 1;
+    public $tiempo_entre_dosis = [];
     public $tipo;
     public $precio;
     public $edad_desde;
     public $edad_hasta;
     public $genero;
     public $enfermedad;
-    // public $lote;//Ensayo ajuste
     public $sintomasAdversos;
     public $cuidadosPos;
     public $insumos;
@@ -26,7 +26,7 @@ class CrearVacuna extends Component
     //Validaciones formulario crear-vacuna.blade.php
     protected $rules = [
         'nombre' => ['required', 'string'],
-        'numeroDosis' => ['required', 'numeric'],
+        'numeroDosis' => ['required', 'integer', 'min:1'],
         'tipo_user' => ['required'],
         'tipo' => ['required'],
         'precio' => ['required', 'numeric'],
@@ -38,6 +38,9 @@ class CrearVacuna extends Component
         'cuidadosPos' => ['required'],
         'sintomas' => ['required'],
         'insumos' => ['required'],
+        'tiempo_entre_dosis.*.anos' => ['nullable', 'integer', 'min:0'],
+        'tiempo_entre_dosis.*.meses' => ['nullable', 'integer', 'min:0'],
+        'tiempo_entre_dosis.*.dias' => ['nullable', 'integer', 'min:0'],
         'metodoAplicacion' => ['required']
     ];
 
@@ -56,7 +59,7 @@ class CrearVacuna extends Component
         $datos = $this->validate();
 
         //Crear la vacuna
-        Vacuna::create([
+        $vacuna = Vacuna::create([
             //'': campos del fillable Vacuna.php.  $datos['']: datos infresados en los inputs
             'nombre' => $datos['nombre'],
             'numeroDosis' => $datos['numeroDosis'],
@@ -74,6 +77,32 @@ class CrearVacuna extends Component
             'metodoAplicacion' => $datos['metodoAplicacion'],
             'user_id' => auth()->user()->id,//Pasamos el usuario autenticado (auth()) que crea la vacante
         ]);
+
+        // Si el número de dosis es 1, vaciar la tabla de tiempos entre dosis
+        if ($vacuna->numero_dosis == 1) {
+            $vacuna->tiemposEntreDosis()->delete();  // Eliminar todos los registros de tiempos entre dosis
+        } else {
+            // Si hay más de una dosis, se actualizan o crean los tiempos entre dosis
+            if (!empty($this->tiempo_entre_dosis)) {
+                $dosis_numero = 2; // Comenzar desde 2 para la primera dosis de tiempo entre dosis
+
+                // Limitar el número de registros a (numero_dosis - 1)
+                foreach (array_slice($this->tiempo_entre_dosis, 0, $vacuna->numero_dosis - 1) as $index => $tiempo) {
+                    // Calcular el tiempo total en días
+                    $dias = ($tiempo['anos'] ?? 0) * 365 + ($tiempo['meses'] ?? 0) * 30 + ($tiempo['dias'] ?? 0);
+                    
+                    // Crear o actualizar el registro en la tabla de tiempos entre dosis
+                    $vacuna->tiemposEntreDosis()->updateOrCreate(
+                        ['dosis_numero' => $dosis_numero],
+                        ['dias' => $dias]
+                    );
+
+                    // Incrementar el valor de dosis_numero para la siguiente dosis
+                    $dosis_numero++;
+                }
+            }
+        }
+
 
         //Mensaje exito
         session()->flash('mensaje', 'Vacuna creada correctamente');

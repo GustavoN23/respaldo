@@ -37,6 +37,53 @@
             @enderror
         </div>
 
+        {{-- Tiempo entre dosis --}}
+        @if ($numeroDosis > 1)
+            @for ($i = 2; $i <= $numeroDosis; $i++)
+                <div class="p-4 bg-gray-100 rounded-lg shadow-md mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Dosis {{ $i }}</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        
+                        {{-- Años --}}
+                        <div>
+                            <x-input-label for="tiempo_entre_dosis_{{ $i }}_anos" :value="__('Años')" />
+                            <x-text-input 
+                                id="tiempo_entre_dosis_{{ $i }}_anos" 
+                                class="block mt-1 w-full border-gray-300"
+                                type="number"
+                                wire:model="tiempo_entre_dosis.{{ $i }}.anos"
+                                placeholder="Años"
+                            />
+                        </div>
+
+                        {{-- Meses --}}
+                        <div>
+                            <x-input-label for="tiempo_entre_dosis_{{ $i }}_meses" :value="__('Meses')" />
+                            <x-text-input 
+                                id="tiempo_entre_dosis_{{ $i }}_meses" 
+                                class="block mt-1 w-full border-gray-300"
+                                type="number"
+                                wire:model="tiempo_entre_dosis.{{ $i }}.meses"
+                                placeholder="Meses"
+                            />
+                        </div>
+
+                        {{-- Días --}}
+                        <div>
+                            <x-input-label for="tiempo_entre_dosis_{{ $i }}_dias" :value="__('Días')" />
+                            <x-text-input 
+                                id="tiempo_entre_dosis_{{ $i }}_dias" 
+                                class="block mt-1 w-full border-gray-300"
+                                type="number"
+                                wire:model="tiempo_entre_dosis.{{ $i }}.dias"
+                                placeholder="Días"
+                            />
+                        </div>
+                    </div>
+                </div>
+            @endfor
+        @endif
+
         {{--Tipo usuario--}}
         <div class="md:col-span-2" hidden>
             <x-input-label for="tipo_user" :value="__('Tipo usuario')" />

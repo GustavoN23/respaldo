@@ -25,5 +25,12 @@ class Vacuna extends Model
         'insumos',
         'metodoAplicacion',
         'user_id',
+        
     ];
+
+    // Relación con los tiempos entre dosis
+    public function tiemposEntreDosis()
+    {
+        return $this->hasMany(TiempoEntreDosis::class);  // Relación de uno a muchos
+    }
 }
